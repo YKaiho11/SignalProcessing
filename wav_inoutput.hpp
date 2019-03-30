@@ -43,13 +43,22 @@ double *audio_read(WAV_PRM *prm, char *filename)
     fread(&fmt_bytes_per_sec, 4, 1, fp);
     fread(&fmt_block_size, 2, 1, fp);
     fread(&fmt_bits_per_sample, 2, 1, fp);
-    fread(data_ID, 1, 4, fp);
+    char c[2];
+    for(int i=0;i<100;i++){
+        fread(c,1,2,fp);
+        printf("%s\n",c);
+        if(!strcmp(c,"da")){
+            fread(c,1,2,fp);
+            printf("%s\n",c);
+            if(!strcmp(c,"ta")) break;
+        }
+    }
     fread(&data_size, 4, 1, fp);
     
     //パラメータ代入
     prm->fs = fmt_samples_per_sec;
     prm->bits = fmt_bits_per_sample;
-    prm->L = data_size / 2;
+    prm->L = (int)data_size / 2;
     
     //音声データ代入
     data = (double*)calloc(prm->L,sizeof(double));

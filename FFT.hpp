@@ -51,7 +51,7 @@ double hamming_window(const int N, int i){
 }
 
 
-void FFT(Sound* sound, double startTime, double endTime, const int N, comp G[N]){
+void FFT(Sound* sound, double startTime, double endTime, const int N, comp G[N], bool drawResult){
     int i;
     complex_t* x;
     x=(complex_t*)malloc(N*sizeof(complex_t));
@@ -73,28 +73,28 @@ void FFT(Sound* sound, double startTime, double endTime, const int N, comp G[N])
     for(i=0;i<N/2;i++){
         if(abs(G[i])>max) max=abs(G[i]);
     }
-    printf("max frequency is %f\n",N/2/(endTime-startTime));
     
-    
-    /****drawing****/
-    int width=1200;
-    int height=600;
-    int height_offset=50;
-    Mat win(Size(width,height+height_offset),CV_8U,Scalar::all(252));
-    for(i=0;i<width;i++){
-        rectangle(win,Point(i,height-abs(G[i*N/2/width])*height/max),Point(i,height),Scalar(0));
+    if(drawResult){
+        /****drawing****/
+        int width=1200;
+        int height=600;
+        int height_offset=50;
+        Mat win(Size(width,height+height_offset),CV_8U,Scalar::all(252));
+        for(i=0;i<width;i++){
+            rectangle(win,Point(i,height-abs(G[i*N/2/width])*height/max),Point(i,height),Scalar(0));
+        }
+        
+        for(i=0;i<5;i++){
+            char c[16];
+            sprintf(c,"|%d",(int)(1.0*i*N/2/(endTime-startTime)/5));
+            putText(win, c, Point(i*width/5,height+height_offset/2), FONT_HERSHEY_SIMPLEX, 1.2, Scalar(0,0,200), 1, CV_AA);
+        }
+        
+        imshow("win",win);
+        //imwrite("output_FFT.png",win);
+        waitKey();
     }
     
-    for(i=0;i<5;i++){
-        char c[16];
-        sprintf(c,"|%d",(int)(1.0*i*N/2/(endTime-startTime)/5));
-        putText(win, c, Point(i*width/5,height+height_offset/2), FONT_HERSHEY_SIMPLEX, 1.2, Scalar(0,0,200), 1, CV_AA);
-    }
-    
-    imshow("win",win);
-    imwrite("output_FFT.png",win);
-    waitKey();
-    destroyWindow("win");
     free(x);
 }
 
@@ -109,12 +109,26 @@ void IFFT(Sound* sound, double startTime, double endTime, const int N, comp G[N]
     
     ifft(N,x);
     
+    bool isFirst=true;
+    double val_pre;
     for(int i=0;i<N;i++){
-        double tmp_val=x[i].real()/hamming_window(N,i);
-        sound->change_waveData((int)(sound->samplingFrequency*((endTime-startTime)/N*i+startTime)),tmp_val);
+        double val_tmp=x[i].real()/hamming_window(N,i);
+        sound->waveData[(int)(sound->samplingFrequency*((endTime-startTime)/N*i+startTime))]=val_tmp;
         
-        for(int j=(int)(sound->samplingFrequency*((endTime-startTime)/N*i+startTime));j<(int)(sound->samplingFrequency*((endTime-startTime)/N*(i+1)+startTime));j++){
-            sound->change_waveData(j,tmp_val);
+        
+        if(isFirst) {
+            isFirst=false;
+            val_pre=val_tmp;
+        }
+        else{
+            int a=(int)(sound->samplingFrequency*((endTime-startTime)/N*(i-1)+startTime))+1;
+            int b=(int)(sound->samplingFrequency*((endTime-startTime)/N*i+startTime));
+            for(int j=a;j<=b;j++){
+                if(a!=b){
+                    sound->waveData[j]=1.0*(j-a)*(val_tmp-val_pre)/(b-a)+val_pre;
+                }
+            }
+            val_pre=val_tmp;
         }
     }
     free(x);

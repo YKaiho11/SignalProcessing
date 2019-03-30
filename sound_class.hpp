@@ -21,10 +21,6 @@ public:
             waveData[i]=0;
     }
     
-    void change_waveData(int i, double d){
-        waveData[i]=d;
-    }
-    
     void play(){
         //OpenALの下準備　おまじない的な
         ALCdevice *device = alcOpenDevice(NULL);
@@ -179,7 +175,6 @@ public:
         }
         imshow("win",win);
         waitKey();
-        destroyWindow("win");
     }
     
     void input(char filename[64]){
@@ -191,9 +186,9 @@ public:
         
         samplingFrequency=prm_in.fs;
         if(prm_in.bits==16) amplitude=32767;
-        length=prm_in.L/samplingFrequency;
+        length=1.0*prm_in.L/samplingFrequency;
         
-        waveData = new signed short[samplingFrequency*length];
+        waveData = new signed short[(int)(samplingFrequency*length)];
         for(int i=0;i<samplingFrequency*length;i++)
             waveData[i]=0;
         

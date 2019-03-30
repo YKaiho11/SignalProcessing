@@ -13,3 +13,9 @@ void copy(Sound* src, Sound* dst, double startTime_src, double startTime_dst, do
         dst->waveData[t_dst]=src->waveData[t_src];
     }
 }
+
+void fast_forward(Sound* src, Sound* dst, double startTime, double endTime, double magnification){
+    for(int i=startTime*src->samplingFrequency/magnification;i<endTime*src->samplingFrequency/magnification;i++){
+        dst->waveData[i]=src->waveData[(int)(i*magnification)];
+    }
+}

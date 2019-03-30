@@ -1,28 +1,26 @@
 #pragma once
 #include "complex.hpp"
 #include "FFT.hpp"
-
-void cutoff(const int N, double T, comp G[N], double magnification, double frequency);
+void shift_wave(const int N, comp G[N], int time);
 
 void Fourier(Sound* sound,double startTime, double endTime){
+    if(startTime>=endTime) return;
+    if(startTime<0) return;
+    if(endTime>sound->length) return;
+    
     const int N=2048;//maxfrequency = N/2T
     comp G[N];
     
-    FFT(sound,startTime,endTime,N,G);
+    printf("max frequency = %f\n",N/(2*(endTime-startTime)));
+    printf("interval frequency = %f\n",1/(2*(endTime-startTime)));
     
-    //cutoff(N,endTime-startTime,G,0,300);
+    static bool draw=true;
+    
+    
+    FFT(sound,startTime,endTime,N,G,draw);
+    
     
     IFFT(sound,startTime,endTime,N,G);
-    //FFT(sound,startTime,endTime,N,G);
-}
-
-void cutoff(const int N, double T, comp G[N], double magnification, double frequency){
-    if(frequency>N/(2*T)) return;
-    int nearest_index=frequency*T+0.5;//round
-    
-    int width=10;
-    for(int i=-width;i<=width;i++){
-        G[nearest_index+i].re*=magnification  ;G[nearest_index-i].im*=magnification;
-        G[N-nearest_index+i].re*=magnification;G[N-nearest_index-i].im*=magnification;
-    }
+    FFT(sound,startTime,endTime,N,G,draw);
+    draw=false;
 }
