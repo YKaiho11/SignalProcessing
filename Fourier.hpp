@@ -1,7 +1,6 @@
 #pragma once
 #include "complex.hpp"
 #include "FFT.hpp"
-void shift_wave(const int N, comp G[N], int time);
 
 void Fourier(Sound* sound,double startTime, double endTime){
     if(startTime>=endTime) return;

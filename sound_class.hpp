@@ -28,24 +28,24 @@ public:
         alcMakeContextCurrent(context);
         
         //バッファ(保存領域)とソース(音源)を宣言
-        ALuint buffer;
-        ALuint source;
+		ALuint buffer[2];
+		ALuint source;
         //それを生成
-        alGenBuffers(1, &buffer);
+        alGenBuffers(2, buffer);
         alGenSources(1, &source);
         
         //fail safe
-        for(int i=0;i<samplingFrequency*length;i++){
-            if(waveData[i]>amplitude)
-                waveData[i]=amplitude;
-            if(waveData[i]<-amplitude)
-                waveData[i]=-amplitude;
-        }
+		for (int i = 0; i < samplingFrequency*length; i++) {
+			if (waveData[i] > amplitude)
+				waveData[i] = amplitude;
+			if (waveData[i] < -amplitude)
+				waveData[i] = -amplitude;
+		}
         
         //バッファに音源データを入れる
-        alBufferData(buffer, AL_FORMAT_MONO16, &waveData[0], length*samplingFrequency * sizeof(signed short), samplingFrequency);
+		alBufferData(buffer[0], AL_FORMAT_MONO16, &waveData[0], length*samplingFrequency * sizeof(signed short), samplingFrequency);
         //ソースにバッファを適用
-        alSourcei(source, AL_BUFFER, buffer);
+        alSourcei(source, AL_BUFFER, buffer[0]);
         //ループ再生をON
         //alSourcei(source, AL_LOOPING, AL_TRUE);
         //ソースを再生！
@@ -56,7 +56,7 @@ public:
         cv::waitKey(length*1000);//fuction of openCV
         
         // バッファの破棄
-        alDeleteBuffers(1, &buffer);
+        alDeleteBuffers(2, buffer);
         // ソースの破棄
         alDeleteSources(1, &source);
         
@@ -167,8 +167,8 @@ public:
     
     
     void draw_wave(double startTime,double endTime){
-        int width=1200;
-        int height=600;
+        int width=800;
+        int height=400;
         Mat win(Size(width,height),CV_8U,Scalar::all(255));
         for(int i=0;i<width;i++){
             rectangle(win,Point(i,height/2+(int)(1.0*height/2/amplitude*waveData[(int)((i+startTime*samplingFrequency)*(endTime*samplingFrequency-startTime*samplingFrequency)/width)])),Point(i,height/2),Scalar(0));
@@ -213,6 +213,7 @@ public:
         
         //データコピー(実際にはこの代わりにエフェクト処理をかける)
         data_out = (double*)calloc(prm_out.L, sizeof(double)); //メモリの確保
+
         for (i = 0;i < prm_out.L;i++){
             data_out[i] = waveData[i]*1.0/amplitude;
         }

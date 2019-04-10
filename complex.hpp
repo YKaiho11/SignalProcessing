@@ -81,7 +81,7 @@ inline comp operator+(const comp& x,const float y){
 //real+Complex
 inline comp operator+(const float x,const comp& y){
     return comp(x + y.real(), y.imag());
-};
+}
 //Complex-Complex
 inline comp operator-(const comp& x,const comp& y){
     return comp(x.real() - y.real(), x.imag() - y.imag());
@@ -97,39 +97,39 @@ inline comp operator-(const float x,const comp& y){
 //Complex*Complex
 inline comp operator*(const comp& x,const comp& y){
     return comp (
-                    x.real() * y.real() - x.imag() * y.imag()    ,\
+                    x.real() * y.real() - x.imag() * y.imag()    ,
                     x.real() * y.imag() + x.imag() * y.real()    );
 }
 //Complex*float
 inline comp operator*(const comp& x,float y){
     return comp (
-                    x.real() * y    ,\
+                    x.real() * y    ,
                     x.imag() * y    );
 }
 //float*Complex
 inline comp operator*(float x,const comp& y){
     return comp (
-                    x * y.real()    ,\
+                    x * y.real()    ,
                     x * y.imag()    );
 }
 //Complex/Complex
 inline comp operator/(const comp& x,const comp& y){
     float norm_y = y.real()*y.real()+y.imag()*y.imag();
     return comp (
-                    (x.real() * y.real() + x.imag() * y.imag()) / norm_y    ,\
+                    (x.real() * y.real() + x.imag() * y.imag()) / norm_y    ,
                     (x.imag() * y.real() - x.real() * y.imag()) / norm_y    );
 }
 //Complex/float
 inline comp operator/(const comp& x,float y){
     return comp (
-                    x.real() / y    ,\
+                    x.real() / y    ,
                     x.imag() / y    );
 }
 //float/Complex
 inline comp operator/(float x,const comp& y){
     float norm_y = y.real() * y.real() + y.imag() * y.imag();
     return comp (
-                    x * y.real() / norm_y        ,\
+                    x * y.real() / norm_y        ,
                     -x * y.imag() / norm_y    );
 }
 
