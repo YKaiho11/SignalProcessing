@@ -1,18 +1,17 @@
 #pragma once
 const double interval = 0.1;
-#define EPSILON 0.00001
+#define EPSILON 0.01
 
 double Euclid(double x, double x_);
 double KL(double x, double x_);
 double IS(double x, double x_);
 
-void NMF(Sound* sound, double startTime, double endTime, const int I) {
+void NMF(Sound* sound, double startTime, double endTime, const int I,const int K) {
 	int i, n, k;
 	//X=TV
 	//N*I=N*K K*I
 	//k:base number,i:length
 	const int N = 2048;
-	const int K = 10;
 	const int option = 2;//0,1,2
 	comp G[N];
 
@@ -52,11 +51,11 @@ void NMF(Sound* sound, double startTime, double endTime, const int I) {
 		FFT(sound, (endTime - startTime)*i / I + startTime, (endTime - startTime)*(i + 1) / I + startTime, N, G, false);
 		double max_s = 0;
 		for (n = 0; n < N; n++) {
-			if (max_s < pow(abs(G[n]), 2))max_s = pow(abs(G[n]), 2);
+			if (max_s < pow(abs(G[n]), 1))max_s = pow(abs(G[n]), 1);
 		}
 
 		for (n = 0; n < N; n++) {
-			X[n][i] = pow(abs(G[n]), 2) / max_s;
+			X[n][i] = pow(abs(G[n]), 1) / max_s;
 		}
 	}
 
@@ -109,7 +108,7 @@ void NMF(Sound* sound, double startTime, double endTime, const int I) {
 		if (isFirst) isFirst = false;
 		else {
 			//printf("%f,%f\n", distance, distance_pre);
-			//printf("d=%f\n", abs(distance_pre - distance));
+			printf("d=%f\n", abs(distance_pre - distance));
 			if (abs(distance_pre - distance) < EPSILON) break;
 		}
 
@@ -182,11 +181,12 @@ void NMF(Sound* sound, double startTime, double endTime, const int I) {
 		}
 	}
 
+    const int width=600;
+    const int height=600;
 	//show result
-	int base_width = 800;
-	int base_height = 10;
+	int base_width = width;
+    int base_height = height/K;
 	Mat base(Size(base_width, K * base_height), CV_8UC3, Scalar::all(0));
-	Mat feature(Size(I * 10, K * 10), CV_8UC3, Scalar::all(0));
 
 	for (k = 0; k < K; k++) {//V[n][k]
 		double max_v = 0;
@@ -208,7 +208,7 @@ void NMF(Sound* sound, double startTime, double endTime, const int I) {
 					average += V[j][k];
 				}
 				average /= n1 - n0;
-				int color[3] = { 255 - average / max_v * 255,0,average / max_v * 255 };
+                int color[3] = { (int)(255 - average / max_v * 255),0,(int)(average / max_v * 255) };
 				for (int ii = i; ii < i + 1; ii++) {
 					for (int jj = base_height * k; jj < base_height * (k + 1); jj++) {
 						base.data[3 * (jj*base.cols + ii)] = color[0];
@@ -223,6 +223,28 @@ void NMF(Sound* sound, double startTime, double endTime, const int I) {
 		}
 	}
 	imshow("base", base);
+    
+    int width_feature=width/I;
+    Mat feature(Size(I * width_feature, K * base_height), CV_8UC3, Scalar::all(0));
+    for(k=0;k<K;k++){//T[K][I]
+        double max_t=0;
+        for(i=0;i<I;i++){
+            if(max_t<T[k][i]) max_t=T[k][i];
+        }
+        
+        for(i=0;i<I;i++){
+            int color[3]={(int)(255-T[k][i]/max_t*255),0,(int)(T[k][i]/max_t*255)};
+            printf("%d,%d->%d,%d\n",i*width_feature,k*base_height,(i+1)*width_feature,k+1*base_height);
+            for(int ii=i*width_feature;ii<(i+1)*width_feature;ii++){
+                for(int jj=k*base_height;jj<(k+1)*base_height;jj++){
+                    feature.data[3 * (jj*feature.cols + ii)] = color[0];
+                    feature.data[3 * (jj*feature.cols + ii)+1] = color[1];
+                    feature.data[3 * (jj*feature.cols + ii)+2] = color[2];
+                }
+            }
+        }
+    }
+    imshow("feature",feature);
 	waitKey();
 
 	/*****free memory ****/

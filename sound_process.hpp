@@ -2,6 +2,9 @@
 
 void synthesize(Sound* src1,Sound* src2,Sound* dst,double startTime,double endTime){
     for (int i = startTime*src1->samplingFrequency; i < endTime*src1->samplingFrequency; i++) {
+        if(i<0 || i>src1->samplingFrequency*src1->length || i>src2->samplingFrequency*src2->length){
+            break;
+        }
         dst->waveData[i]=(src1->waveData[i]+src2->waveData[i])/2;
     }
 }

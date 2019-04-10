@@ -28,10 +28,10 @@ public:
         alcMakeContextCurrent(context);
         
         //バッファ(保存領域)とソース(音源)を宣言
-		ALuint buffer[2];
+		ALuint buffer;
 		ALuint source;
         //それを生成
-        alGenBuffers(2, buffer);
+        alGenBuffers(1, &buffer);
         alGenSources(1, &source);
         
         //fail safe
@@ -43,9 +43,9 @@ public:
 		}
         
         //バッファに音源データを入れる
-		alBufferData(buffer[0], AL_FORMAT_MONO16, &waveData[0], length*samplingFrequency * sizeof(signed short), samplingFrequency);
+		alBufferData(buffer, AL_FORMAT_MONO16, &waveData[0], length*samplingFrequency * sizeof(signed short), samplingFrequency);
         //ソースにバッファを適用
-        alSourcei(source, AL_BUFFER, buffer[0]);
+        alSourcei(source, AL_BUFFER, buffer);
         //ループ再生をON
         //alSourcei(source, AL_LOOPING, AL_TRUE);
         //ソースを再生！
@@ -56,7 +56,7 @@ public:
         cv::waitKey(length*1000);//fuction of openCV
         
         // バッファの破棄
-        alDeleteBuffers(2, buffer);
+        alDeleteBuffers(1, &buffer);
         // ソースの破棄
         alDeleteSources(1, &source);
         
