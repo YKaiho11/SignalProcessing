@@ -165,3 +165,8 @@ comp pow(comp z, int n){
 double abs(comp z){
     return sqrt(pow(z.real(),2)+pow(z.imag(),2));
 }
+
+
+comp conjugate(comp z) {
+	return comp(z.re, -z.im);
+}

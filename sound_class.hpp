@@ -67,10 +67,18 @@ public:
     }
     
     /********some types of wave********/
-    void sine_curve(int frequency,double startTime,double endTime){
+    void sine_curve(int frequency,double startTime,double endTime){//todo phase ajustment
+		double phase;
+		if (startTime == 0) {
+			phase = 0;
+		}
+		else {
+			phase = asin(waveData[(int)(startTime*samplingFrequency) - 1] / amplitude);
+		}
+
         for (int i = startTime*samplingFrequency; i < endTime*samplingFrequency; i++) {
             if(i>length*samplingFrequency) break;
-            waveData[i] = amplitude * sin(2 * M_PI*i * frequency / samplingFrequency);
+			waveData[i] = amplitude * sin(2 * M_PI*i * frequency / samplingFrequency + phase);
         }
     }
     
@@ -171,7 +179,7 @@ public:
         int height=400;
         Mat win(Size(width,height),CV_8U,Scalar::all(255));
         for(int i=0;i<width;i++){
-            rectangle(win,Point(i,height/2+(int)(1.0*height/2/amplitude*waveData[(int)((i+startTime*samplingFrequency)*(endTime*samplingFrequency-startTime*samplingFrequency)/width)])),Point(i,height/2),Scalar(0));
+            rectangle(win,Point(i,height/2+(int)(1.0*height/2/amplitude*waveData[(int)(i*(endTime - startTime)*samplingFrequency / width + startTime * samplingFrequency)])),Point(i,height/2),Scalar(0));
         }
         imshow("win",win);
         waitKey();
