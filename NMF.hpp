@@ -309,6 +309,11 @@ void NMF_calc(double** X, double** V, double** T, int N, int K, int I) {
 }
 
 void addList(int val,int *index,int decreaseNo){
+	if (decreaseNo == 0) {
+		index[0] = val;
+		return;
+	}
+
 	int i, j;
 	if (val < index[0]) {
 		i = 0;

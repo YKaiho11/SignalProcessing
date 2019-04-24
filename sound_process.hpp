@@ -22,3 +22,24 @@ void fast_forward(Sound* src, Sound* dst, double startTime, double endTime, doub
         dst->waveData[i]=src->waveData[(int)(i*magnification)];
     }
 }
+
+void eliminate_vocal(Sound* soundL, Sound* soundR,Sound* dst,double balance) {
+	if (soundR->length != soundL->length) {
+		printf("load deffernt size file!\n");
+		return;
+	}
+	if (soundR->samplingFrequency != soundL->samplingFrequency) {
+		printf("load deffernt sampling frequency file!\n");
+		return;
+	}
+	if (balance < -1 || balance > 1) {
+		printf("balance should be in range from -1 to 1!\n");
+		return;
+	}
+
+	dst->New(soundR->samplingFrequency, soundR->length);
+
+	for (int i = 0; i < soundR->samplingFrequency*soundR->length; i++) {
+		dst->waveData[i] = soundL->waveData[i] * ((-balance + 1) / 2) - soundR->waveData[i] * ((balance + 1) / 2);
+	}
+}

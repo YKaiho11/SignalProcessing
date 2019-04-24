@@ -175,6 +175,10 @@ public:
     
     
     void draw_wave(double startTime,double endTime){
+		if (startTime > endTime) {
+			printf("error\n");
+			return;
+		}
         int width=800;
         int height=400;
         Mat win(Size(width,height),CV_8U,Scalar::all(255));

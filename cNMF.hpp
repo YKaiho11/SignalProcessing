@@ -71,7 +71,7 @@ void cNMF(Sound* sound, double startTime, double endTime, int I, int K) {
 
 		if (max_s == 0) {
 			for (n = 0; n < N; n++) {
-				Y[n][i].re = 0.00000000000000001;
+				Y[n][i].re = 0;
 			}
 		}
 		else {
@@ -97,13 +97,15 @@ void cNMF(Sound* sound, double startTime, double endTime, int I, int K) {
 	for (n = 0; n < N; n++) {
 		for (k = 0; k < K; k++) {
 			for (i = 0; i < I; i++) {
-				V[n][k][i].re = (double)rand() / RAND_MAX;
-				V[n][k][i].im = (double)rand() / RAND_MAX;
+				V[n][k][i].re = 2 * (double)rand() / RAND_MAX - 1;
+				V[n][k][i].im = 2 * (double)rand() / RAND_MAX - 1;
 				double normalizing = abs(V[n][k][i]);
 				V[n][k][i].re /= normalizing;
 				V[n][k][i].im /= normalizing;
 
-				B[n][k][i] = (double)rand() / RAND_MAX;
+				do {
+					B[n][k][i] = (double)rand() / RAND_MAX;
+				} while (B[n][k][i] == 0);
 			}
 		}
 	}
@@ -117,8 +119,6 @@ void cNMF(Sound* sound, double startTime, double endTime, int I, int K) {
 			}
 			for (k = 0; k < K; k++) {
 				B[n][k][i] /= sum;
-				if (B[n][k][i] == 0)
-					B[n][k][i] = 0.000000000000000000000001;
 			}
 		}
 	}
@@ -128,7 +128,7 @@ void cNMF(Sound* sound, double startTime, double endTime, int I, int K) {
 	for (n = 0; n < N; n++)
 		for (i = 0; i < I; i++)
 			Y_[n][i] = abs(Y[n][i]);
-	NMF_calc(Y_, H, U, N, K, I);
+	//NMF_calc(Y_, H, U, N, K, I);
 	for (n = 0; n < N; n++) delete[] Y_[n];
 	delete[] Y_;
 
@@ -143,8 +143,8 @@ void cNMF(Sound* sound, double startTime, double endTime, int I, int K) {
 			for (i = 0; i < I; i++) {
 				F[n][i].re = 0; F[n][i].im = 0;
 				for (k = 0; k < K; k++) {
-					comp c = H[n][k] * U[k][i] * V[n][k][i];
-					F[n][i] += c;
+					comp c = F[n][i] + H[n][k] * U[k][i] * V[n][k][i];
+					F[n][i] = c;
 				}
 			}
 		}
@@ -169,7 +169,7 @@ void cNMF(Sound* sound, double startTime, double endTime, int I, int K) {
 		else {
 			//printf("%f,%f\n", distance, distance_pre);
 			printf("d=%f\n", abs(distance_pre - distance));
-			if (abs(distance_pre - distance) < EPSILON*0.01) break;
+			if (abs(distance_pre - distance) < EPSILON) break;
 		}
 
 		//update X
@@ -178,6 +178,22 @@ void cNMF(Sound* sound, double startTime, double endTime, int I, int K) {
 				for (i = 0; i < I; i++) {
 					comp c2 = H[n][k] * U[k][i] * V[n][k][i] + B[n][k][i] * (Y[n][i] - F[n][i]);
 					X[n][k][i] = c2;
+				}
+			}
+		}
+
+		//update V
+		for (n = 0; n < N; n++) {
+			for (k = 0; k < K; k++) {
+				for (i = 0; i < I; i++) {
+					if (abs(X[n][k][i]) == 0) {
+						V[n][k][i].re = 0;
+						V[n][k][i].im = 0;
+					}
+					else {
+						comp c = X[n][k][i] / abs(X[n][k][i]);
+						V[n][k][i] = c;
+					}
 				}
 			}
 		}
@@ -191,7 +207,7 @@ void cNMF(Sound* sound, double startTime, double endTime, int I, int K) {
 				for (i = 0; i < I; i++) {
 					if (B[n][k][i] != 0) {
 						comp c = conjugate(X[n][k][i])*V[n][k][i];
-						sum1 += U[k][i] * abs(c.re) / B[n][k][i];
+						sum1 += U[k][i] * c.re / B[n][k][i];
 						sum2 += U[k][i] * U[k][i] / B[n][k][i];
 					}
 				}
@@ -219,27 +235,11 @@ void cNMF(Sound* sound, double startTime, double endTime, int I, int K) {
 				for (n = 0; n < N; n++) {
 					if (B[n][k][i] != 0) {
 						comp c = conjugate(X[n][k][i])*V[n][k][i];
-						sum1 += H[n][k] * abs(c.re) / B[n][k][i];
+						sum1 += H[n][k] * c.re / B[n][k][i];
 						sum2 += H[n][k] * H[n][k] / B[n][k][i];
 					}
 				}
 				U[k][i] = sum1 / (sum2 + lambda * p*pow(V_[k][i], p - 2));//U<->V_
-			}
-		}
-
-		//update V
-		for (n = 0; n < N; n++) {
-			for (k = 0; k < K; k++) {
-				for (i = 0; i < I; i++) {
-					if (abs(X[n][k][i]) == 0) {
-						V[n][k][i].re = 0;
-						V[n][k][i].im = 0;
-					}
-					else {
-						comp c = X[n][k][i] / abs(X[n][k][i]);
-						V[n][k][i] = c;
-					}
-				}
 			}
 		}
 
@@ -251,7 +251,9 @@ void cNMF(Sound* sound, double startTime, double endTime, int I, int K) {
 					sum += H[n][k] * U[k][i];
 				}
 				if (sum == 0) {
-					B[n][k][i] = 1.0 / K;
+					for (k = 0; k < K; k++) {
+						B[n][k][i] = 1.0 / K;
+					}
 				}
 				else {
 					for (k = 0; k < K; k++) {
@@ -271,8 +273,15 @@ void cNMF(Sound* sound, double startTime, double endTime, int I, int K) {
 	decreaseIndex = new int[K];
 	for (k = 1; k < K; k++) decreaseIndex[k] = 0;
 	decreaseIndex[0] = -1;
-	int decreaseNo = 0;// decrease_base(H, N, K, decreaseIndex, 1);
+	int decreaseNo =  decrease_base(H, N, K, decreaseIndex, 0.5);
+	printf("decrease = %d\n", decreaseNo);
 	merge_base(H, U, N, K, I, decreaseIndex, decreaseNo);
+	printf("decrease + merge = %d\n", decreaseNo);
+	if (decreaseNo == K) {
+		printf("No Base!\n");
+		waitKey();
+		return;
+	}
 
 	const int width = 600;
 	const int height = 600;
