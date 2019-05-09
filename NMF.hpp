@@ -418,5 +418,6 @@ double KL(double x, double x_) {
 	return x*log(x / x_) - x + x_;
 }
 double IS(double x, double x_) {
+    if(x==0 || x_==0) return 0;
 	return x / x_ - log(x / x_) - 1;
 }

@@ -67,6 +67,32 @@ void cNMF(Sound* sound, double startTime, double endTime, int I, int K) {
 		X[n] = new comp*[K];
 		for (k = 0; k < K; k++) X[n][k] = new comp[I];
 	}
+    
+    //if failed to allocate memory
+    if(Y==nullptr || F==nullptr || H==nullptr || U==nullptr || V==nullptr || V_==nullptr || B==nullptr || X==nullptr){
+        printf("failed to allocate memory\n");
+        return;
+    }
+    
+    for(n=0;n<N;n++){
+        if(Y[n]==nullptr || F[n]==nullptr || H[n]==nullptr || V[n]==nullptr || X[n]==nullptr){
+            printf("failed to allocate memory\n");
+            return;
+        }
+        for(k=0;k<K;k++){
+            if(V[n][k]==nullptr || B[n][k]==nullptr || X[n][k]==nullptr){
+                printf("failed to allocate memory\n");
+                return;
+            }
+        }
+    }
+    
+    for(k=0;k<K;k++){
+        if(U[k]==nullptr || V_[k]==nullptr){
+            printf("failed to allocate memory\n");
+            return;
+        }
+    }
 
 	//generate Y
 	for (i = 0; i < I; i++) {
@@ -78,7 +104,8 @@ void cNMF(Sound* sound, double startTime, double endTime, int I, int K) {
 
 		if (max_s == 0) {
 			for (n = 0; n < N; n++) {
-				Y[n][i].re = 0;
+				Y[n][i].re = 0.00000000000000001;
+                Y[n][i].im = 0.00000000000000001;
 			}
 		}
 		else {
@@ -92,13 +119,13 @@ void cNMF(Sound* sound, double startTime, double endTime, int I, int K) {
 	//initialize H,U,V,V_,B
 	for (n = 0; n < N; n++) {
 		for (k = 0; k < K; k++) {
-			H[n][k] = (double)rand() / RAND_MAX + 0.5;
+            H[n][k] = 1.0*rand() / RAND_MAX + 0.5;
 		}
 	}
 	for (k = 0; k < K; k++) {
 		for (i = 0; i < I; i++) {
-			U[k][i] = (double)rand() / RAND_MAX + 0.5;;
-			V_[k][i] = (double)rand() / RAND_MAX + 0.5;;
+            U[k][i] = 1.0*rand() / RAND_MAX + 0.5;
+            V_[k][i] = 1.0*rand() / RAND_MAX + 0.5;
 		}
 	}
 	for (n = 0; n < N; n++) {
@@ -181,7 +208,7 @@ void cNMF(Sound* sound, double startTime, double endTime, int I, int K) {
 		else {
 			//printf("%f,%f\n", distance, distance_pre);
 			printf("calculating CMF... d=%f    distance=%f\n", abs(distance_pre - distance),distance);
-			if (abs(distance_pre - distance) < EPSILON*0.01) break;
+			if (abs(distance_pre - distance) < EPSILON*0.1) break;
 		}
 
 		//update B
@@ -289,6 +316,7 @@ void cNMF(Sound* sound, double startTime, double endTime, int I, int K) {
 	printf("decrease = %d\n", decreaseNo);
 	merge_base(H, U, N, K, I, decreaseIndex, decreaseNo);
 	printf("decrease + merge = %d\n", decreaseNo);
+    printf("remain = %d\n",K-decreaseNo);
 	if (decreaseNo == K) {
 		printf("No Base!\n");
 		waitKey();
