@@ -40,6 +40,67 @@ void eliminate_vocal(Sound* soundL, Sound* soundR,Sound* dst,double balance) {
 	dst->New(soundR->samplingFrequency, soundR->length);
 
 	for (int i = 0; i < soundR->samplingFrequency*soundR->length; i++) {
-		dst->waveData[i] = soundL->waveData[i] * ((-balance + 1) / 2) - soundR->waveData[i] * ((balance + 1) / 2);
+        signed short db=soundL->waveData[i] * ((-balance + 1) / 2.0) - soundR->waveData[i] * ((balance + 1) / 2.0);
+        if(soundR->amplitude<db) db=soundR->amplitude;
+        if(soundR->amplitude<-db) db=-soundR->amplitude;
+        dst->waveData[i] = db;
+        for(int j=0;j<100;j++){
+            if(i==(int)(soundR->samplingFrequency*soundR->length*j/100.0))
+                printf("%d%% done!\n",j);
+        }
 	}
+}
+
+void only_vocal(Sound* soundL,Sound* soundR,Sound* dst,Sound* vocal){
+    if (soundR->length != soundL->length) {
+        printf("load deffernt size file!\n");
+        return;
+    }
+    if (soundR->samplingFrequency != soundL->samplingFrequency) {
+        printf("load deffernt sampling frequency file!\n");
+        return;
+    }
+    
+    vocal->New(soundR->samplingFrequency, soundR->length);
+    
+    for (int i = 0; i < soundR->samplingFrequency*soundR->length; i++) {
+        signed short db=(soundL->waveData[i]+soundR->waveData[i])/2-dst->waveData[i];
+        if(soundR->amplitude<db) db=soundR->amplitude;
+        if(soundR->amplitude<-db) db=-soundR->amplitude;
+        vocal->waveData[i] = db;
+        printf("%d\nL=%d,R=%d,dst=%d,vo=%d\n",i,soundL->waveData[i],soundR->waveData[i],dst->waveData[i],vocal->waveData[i]);
+        for(int j=0;j<100;j++){
+            if(i==(int)(soundR->samplingFrequency*soundR->length*j/100.0))
+                printf("%d%% done!\n",j);
+        }
+    }
+}
+
+void stereo2monoral(Sound* stereo,Sound* R,Sound* L){
+    L->New(stereo->samplingFrequency,stereo->length/2);
+    R->New(stereo->samplingFrequency,stereo->length/2);
+    
+    for(int i=0;i<stereo->samplingFrequency*stereo->length;i++){
+        if(i%2==0){
+            R->waveData[i/2]=stereo->waveData[i];
+        }
+        else{
+            L->waveData[(i-1)/2]=stereo->waveData[i];
+        }
+    }
+}
+
+Sound* make_eliminatedSound(char* path_to_stereo){
+    Sound* L=new Sound();
+    Sound* R=new Sound();
+    Sound* stereo=new Sound();
+    stereo->input(path_to_stereo);
+    
+    stereo2monoral(stereo,R,L);
+    
+    Sound* dst=new Sound();
+    
+    eliminate_vocal(L,R,dst,0);
+    
+    return dst;
 }

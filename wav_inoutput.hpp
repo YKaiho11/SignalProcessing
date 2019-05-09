@@ -44,7 +44,7 @@ double *audio_read(WAV_PRM *prm, char *filename)
     fread(&fmt_block_size, 2, 1, fp);
     fread(&fmt_bits_per_sample, 2, 1, fp);
     char c[2];
-    for(int i=0;i<100;i++){
+    for(int i=0;i<1000;i++){
         fread(c,1,2,fp);
         printf("%s\n",c);
         if(!strcmp(c,"da")){

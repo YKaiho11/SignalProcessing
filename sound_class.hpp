@@ -9,7 +9,7 @@ public:
     
     Sound(){}
     ~Sound(){
-        delete waveData;
+        delete[] waveData;
     }
     
     void New(int f, double l){
