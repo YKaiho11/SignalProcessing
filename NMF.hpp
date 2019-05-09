@@ -231,7 +231,7 @@ void NMF_calc(double** X, double** V, double** T, int N, int K, int I) {
 		if (isFirst) isFirst = false;
 		else {
 			//printf("%f,%f\n", distance, distance_pre);
-			printf("d=%f\n", abs(distance_pre - distance));
+			printf("calculating NMF... d=%f    distance=%f\n", abs(distance_pre - distance),distance);
 			if (abs(distance_pre - distance) < EPSILON) break;
 		}
 
