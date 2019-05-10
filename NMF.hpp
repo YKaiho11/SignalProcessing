@@ -1,6 +1,5 @@
 #pragma once
 const double interval = 0.1;
-#define EPSILON 0.1
 
 double Euclid(double x, double x_);
 double KL(double x, double x_);
@@ -232,7 +231,7 @@ void NMF_calc(double** X, double** V, double** T, int N, int K, int I) {
 		else {
 			//printf("%f,%f\n", distance, distance_pre);
 			printf("calculating NMF... d=%f    distance=%f\n", abs(distance_pre - distance),distance);
-			if (abs(distance_pre - distance) < EPSILON) break;
+			if (abs(distance_pre - distance) < 0.03) break;/************************************************************SET THRESHOLD*****/
 		}
 
 		//update V
@@ -402,7 +401,7 @@ int decrease_base(double **V,int N,int K,int *index, double threshold) {
 			sum_effective += V[n][k];
 		}
 
-		if (sum_effective / (max_v*N) > threshold) {
+		if (sum_effective / (max_v*N) > threshold || max_v==0) {
 			index[decreaseNo] = k;
 			decreaseNo++;
 		}

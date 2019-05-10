@@ -208,7 +208,7 @@ void cNMF(Sound* sound, double startTime, double endTime, int I, int K) {
 		else {
 			//printf("%f,%f\n", distance, distance_pre);
 			printf("calculating CMF... d=%f    distance=%f\n", abs(distance_pre - distance),distance);
-			if (abs(distance_pre - distance) < EPSILON*0.1) break;
+			if (abs(distance_pre - distance) < 0.001) break;/*********************************************  SET THRESHOLD **************************/
 		}
 
 		//update B
@@ -312,7 +312,7 @@ void cNMF(Sound* sound, double startTime, double endTime, int I, int K) {
 	decreaseIndex = new int[K];
 	for (k = 1; k < K; k++) decreaseIndex[k] = 0;
 	decreaseIndex[0] = -1;
-	int decreaseNo =  decrease_base(H, N, K, decreaseIndex, 0.08);
+	int decreaseNo = decrease_base(H, N, K, decreaseIndex, 0.11);
 	printf("decrease = %d\n", decreaseNo);
 	merge_base(H, U, N, K, I, decreaseIndex, decreaseNo);
 	printf("decrease + merge = %d\n", decreaseNo);
@@ -336,6 +336,8 @@ void cNMF(Sound* sound, double startTime, double endTime, int I, int K) {
 			index++;
 			continue;
 		}
+		printf("k=%d\n", k);
+		printf("index=%d\n", index);
 
 		double max_v = 0;
 		for (n = 0; n < N / 2; n++) {
@@ -366,7 +368,7 @@ void cNMF(Sound* sound, double startTime, double endTime, int I, int K) {
 				}
 			}
 			else {
-
+				
 			}
 		}
 	}
