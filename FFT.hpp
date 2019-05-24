@@ -113,7 +113,7 @@ void IFFT(Sound* sound, double startTime, double endTime, const int N, comp* G){
     double val_pre;
     for(int i=0;i<N;i++){
         double val_tmp=x[i].real()/hamming_window(N,i);
-        sound->waveData[(int)(sound->samplingFrequency*((endTime-startTime)/N*i+startTime))]=val_tmp;
+		sound->waveData[(int)(sound->samplingFrequency*((endTime - startTime) / N * i + startTime))] = val_tmp;
         
         
         if(isFirst) {

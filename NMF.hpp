@@ -10,6 +10,10 @@ void merge_base(double **V, double **T, int N, int K, int I, int *index, int &de
 void addList(int val, int *index, int decreaseNo);
 void NMF_calc(double **X, double **V, double **T, int N, int K, int I);
 
+void show_base(const int width, const int height, int K, int N, int decreaseNo, int decreaseIndex[], double **V);
+void show_base_log(const int width, const int height, int K, int N, int decreaseNo, int decreaseIndex[], double **V);
+void show_weight(const int width, const int height, int K, int I, int decreaseNo, int decreaseIndex[], double **T);
+
 void NMF(Sound* sound, double startTime, double endTime, int I, int K) {
 	int i, n, k;
 	//X=V*T
@@ -96,80 +100,10 @@ void NMF(Sound* sound, double startTime, double endTime, int I, int K) {
 
 	const int width = 600;
 	const int height = 600;
+
 	//show result
-	int base_width = width;
-	int base_height = height / K;
-	Mat base(Size(base_width, (K - decreaseNo) * base_height), CV_8UC3, Scalar::all(0));
-
-	int index = 0;
-	for (k = 0; k < K; k++) {//V[n][k]
-		if (decreaseIndex[index] == k) {
-			index++;
-			continue;
-		}
-
-		double max_v = 0;
-		for (n = 0; n < N / 2; n++) {
-			if (max_v < V[n][k]) max_v = V[n][k];
-		}
-
-		n = 0;
-		for (i = 0; i < base_width; i++) {
-			int n0 = n;
-			while (n < 1.0*i / base_width * N / 2) {
-				n++;
-			}
-			int n1 = n;
-
-			if (n1 - n0 != 0) {
-				double average = 0;
-				for (int j = n0; j < n1; j++) {
-					average += V[j][k];
-				}
-				average /= n1 - n0;
-				int color[3] = { (int)(255 - average / max_v * 255),0,(int)(average / max_v * 255) };
-				for (int ii = i; ii < i + 1; ii++) {
-					for (int jj = base_height * (k - index); jj < base_height * (k - index + 1); jj++) {
-						base.data[3 * (jj*base.cols + ii)] = color[0];
-						base.data[3 * (jj*base.cols + ii) + 1] = color[1];
-						base.data[3 * (jj*base.cols + ii) + 2] = color[2];
-					}
-				}
-			}
-			else {
-
-			}
-		}
-	}
-	imshow("base", base);
-
-	index = 0;
-	int width_feature = width / I;
-	Mat feature(Size(I * width_feature, (K - decreaseNo) * base_height), CV_8UC3, Scalar::all(0));
-	for (k = 0; k < K; k++) {//T[K][I]
-		if (decreaseIndex[index] == k) {
-			index++;
-			continue;
-		}
-		double max_t = 0;
-		for (i = 0; i < I; i++) {
-			if (max_t < T[k][i]) max_t = T[k][i];
-		}
-
-		for (i = 0; i < I; i++) {
-			int color[3] = { (int)(255 - T[k][i] / max_t * 255),0,(int)(T[k][i] / max_t * 255) };
-			for (int ii = i * width_feature; ii < (i + 1)*width_feature; ii++) {
-				for (int jj = (k - index) * base_height; jj < (k - index + 1)*base_height; jj++) {
-					feature.data[3 * (jj*feature.cols + ii)] = color[0];
-					feature.data[3 * (jj*feature.cols + ii) + 1] = color[1];
-					feature.data[3 * (jj*feature.cols + ii) + 2] = color[2];
-				}
-			}
-		}
-	}
-	imshow("feature", feature);
-	waitKey();
-
+	show_base(width, height, K, N, decreaseNo, decreaseIndex, V);
+	show_weight(width, height, K, I, decreaseNo, decreaseIndex, T);
 
 	/*****free memory ****/
 	for (i = 0; i < N; i++) {
@@ -419,4 +353,151 @@ double KL(double x, double x_) {
 double IS(double x, double x_) {
     if(x==0 || x_==0) return 0;
 	return x / x_ - log(x / x_) - 1;
+}
+
+void show_base(const int width,const int height,int K,int N,int decreaseNo,int decreaseIndex[],double **V) {
+	//todo: draw histogram as log
+	int k, n, i;
+	int base_width = width;
+	int base_height = height / K;
+	Mat base(Size(base_width, (K - decreaseNo) * base_height), CV_8UC3, Scalar::all(0));
+
+	int index = 0;
+	for (k = 0; k < K; k++) {//V[n][k]
+		if (decreaseIndex[index] == k) {
+			index++;
+			continue;
+		}
+
+		double max_v = 0;
+		for (n = 0; n < N / 2; n++) {
+			if (max_v < V[n][k]) max_v = V[n][k];
+		}
+
+		n = 0;
+		for (i = 0; i < base_width; i++) {
+			int n0 = n;
+			while (n < 1.0*i / base_width * N / 2) {
+				n++;
+			}
+			int n1 = n;
+
+			if (n1 - n0 != 0) {
+				double average = 0;
+				for (int j = n0; j < n1; j++) {
+					average += V[j][k];
+				}
+				average /= n1 - n0;
+				int color[3] = { (int)(255 - average / max_v * 255),0,(int)(average / max_v * 255) };
+				for (int ii = i; ii < i + 1; ii++) {
+					for (int jj = base_height * (k - index); jj < base_height * (k - index + 1); jj++) {
+						base.data[3 * (jj*base.cols + ii)] = color[0];
+						base.data[3 * (jj*base.cols + ii) + 1] = color[1];
+						base.data[3 * (jj*base.cols + ii) + 2] = color[2];
+					}
+				}
+			}
+			else {
+
+			}
+		}
+	}
+	imshow("base", base);
+	waitKey(1);
+}
+
+void show_base_log(const int width, const int height, int K, int N, int decreaseNo, int decreaseIndex[], double **V) {
+	//todo: draw histogram as log
+	/**
+base index   0->N/2           n
+image index  0->base_width    i
+	   f(i)=a*exp(i)-a
+f(0)=0
+f(base_width)=a*exp(base_width)-a=N/2
+
+a=N/2  /(exp(base_width)-1)
+
+-->f(i)=N/(2*(exp(base_width)-1))*(exp(i)-1)
+
+image index 0->base_width
+base index  f(0)->f(base_width)
+	**/
+	int k, n, i;
+	int base_width = width;
+	int base_height = height / K;
+	Mat base(Size(base_width, (K - decreaseNo) * base_height), CV_8UC3, Scalar::all(0));
+
+	int index = 0;
+	for (k = 0; k < K; k++) {//V[n][k]
+		if (decreaseIndex[index] == k) {
+			index++;
+			continue;
+		}
+
+		double max_v = 0;
+		for (n = 0; n < N / 2; n++) {
+			if (max_v < V[n][k]) max_v = V[n][k];
+		}
+
+		n = 0;
+		for (i = 0; i < base_width; i++) {
+			int n0 = n;
+			while (n < 1.0*i / base_width * N / 2) {
+				n++;
+			}
+			int n1 = n;
+
+			if (n1 - n0 != 0) {
+				double average = 0;
+				for (int j = n0; j < n1; j++) {
+					average += V[j][k];
+				}
+				average /= n1 - n0;
+				int color[3] = { (int)(255 - average / max_v * 255),0,(int)(average / max_v * 255) };
+				for (int ii = i; ii < i + 1; ii++) {
+					for (int jj = base_height * (k - index); jj < base_height * (k - index + 1); jj++) {
+						base.data[3 * (jj*base.cols + ii)] = color[0];
+						base.data[3 * (jj*base.cols + ii) + 1] = color[1];
+						base.data[3 * (jj*base.cols + ii) + 2] = color[2];
+					}
+				}
+			}
+			else {
+
+			}
+		}
+	}
+	imshow("base", base);
+	waitKey(1);
+}
+
+void show_weight(const int width,const int height,int K,int I,int decreaseNo,int decreaseIndex[],double **T) {
+	int k, i;
+	int index = 0;
+	int base_height = height / K;
+	int width_feature = width / I;
+	Mat feature(Size(I * width_feature, (K - decreaseNo) * base_height), CV_8UC3, Scalar::all(0));
+	for (k = 0; k < K; k++) {//T[K][I]
+		if (decreaseIndex[index] == k) {
+			index++;
+			continue;
+		}
+		double max_t = 0;
+		for (i = 0; i < I; i++) {
+			if (max_t < T[k][i]) max_t = T[k][i];
+		}
+
+		for (i = 0; i < I; i++) {
+			int color[3] = { (int)(255 - T[k][i] / max_t * 255),0,(int)(T[k][i] / max_t * 255) };
+			for (int ii = i * width_feature; ii < (i + 1)*width_feature; ii++) {
+				for (int jj = (k - index) * base_height; jj < (k - index + 1)*base_height; jj++) {
+					feature.data[3 * (jj*feature.cols + ii)] = color[0];
+					feature.data[3 * (jj*feature.cols + ii) + 1] = color[1];
+					feature.data[3 * (jj*feature.cols + ii) + 2] = color[2];
+				}
+			}
+		}
+	}
+	imshow("feature", feature);
+	waitKey(1);
 }
