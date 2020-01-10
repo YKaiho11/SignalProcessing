@@ -174,7 +174,7 @@ public:
     /****************/
     
     
-    void draw_wave(double startTime,double endTime){
+    void draw_wave(double startTime,double endTime,int drawTime){
 		if (startTime > endTime) {
 			printf("error\n");
 			return;
@@ -186,7 +186,7 @@ public:
             rectangle(win,Point(i,height/2+(int)(1.0*height/2/amplitude*waveData[(int)(i*(endTime - startTime)*samplingFrequency / width + startTime * samplingFrequency)])),Point(i,height/2),Scalar(0));
         }
         imshow("win",win);
-        waitKey();
+		waitKey(drawTime);
     }
     
     void input(char filename[64]){

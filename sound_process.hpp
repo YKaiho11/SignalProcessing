@@ -5,7 +5,9 @@ void synthesize(Sound* src1,Sound* src2,Sound* dst,double startTime,double endTi
         if(i<0 || i>src1->samplingFrequency*src1->length || i>src2->samplingFrequency*src2->length){
             break;
         }
-        dst->waveData[i]=(src1->waveData[i]+src2->waveData[i])/2;
+        dst->waveData[i]=src1->waveData[i]+src2->waveData[i];
+		if (dst->waveData[i] > 32767) dst->waveData[i] = 32767;
+		if (dst->waveData[i] <- 32767) dst->waveData[i] = -32767;
     }
 }
 
@@ -51,31 +53,6 @@ void eliminate_vocal(Sound* soundL, Sound* soundR,Sound* dst,double balance) {
 	}
 }
 
-void only_vocal(Sound* soundL,Sound* soundR,Sound* dst,Sound* vocal){
-    if (soundR->length != soundL->length) {
-        printf("load deffernt size file!\n");
-        return;
-    }
-    if (soundR->samplingFrequency != soundL->samplingFrequency) {
-        printf("load deffernt sampling frequency file!\n");
-        return;
-    }
-    
-    vocal->New(soundR->samplingFrequency, soundR->length);
-    
-    for (int i = 0; i < soundR->samplingFrequency*soundR->length; i++) {
-        signed short db=(soundL->waveData[i]+soundR->waveData[i])/2-dst->waveData[i];
-        if(soundR->amplitude<db) db=soundR->amplitude;
-        if(soundR->amplitude<-db) db=-soundR->amplitude;
-        vocal->waveData[i] = db;
-        printf("%d\nL=%d,R=%d,dst=%d,vo=%d\n",i,soundL->waveData[i],soundR->waveData[i],dst->waveData[i],vocal->waveData[i]);
-        for(int j=0;j<100;j++){
-            if(i==(int)(soundR->samplingFrequency*soundR->length*j/100.0))
-                printf("%d%% done!\n",j);
-        }
-    }
-}
-
 void stereo2monoral(Sound* stereo,Sound* R,Sound* L){
     L->New(stereo->samplingFrequency,stereo->length/2);
     R->New(stereo->samplingFrequency,stereo->length/2);
@@ -103,4 +80,25 @@ Sound* make_eliminatedSound(char* path_to_stereo){
     eliminate_vocal(L,R,dst,0);
     
     return dst;
+}
+
+Sound* cut_first(char* path) {
+	Sound* src = new Sound();
+	src->input(path);
+
+	int start;
+	for (int i = 0; i < src->length * src->samplingFrequency; i++) {
+		if (src->waveData[i] != 0) {
+			start = i;
+			break;
+		}
+	}
+
+	Sound* dst = new Sound();
+	dst->New(src->samplingFrequency, src->length - src->samplingFrequency*start);
+	for (int i = 0; i < dst->length*dst->samplingFrequency; i++) {
+		dst->waveData[i] = src->waveData[(int)(i + start * src->samplingFrequency)];
+	}
+
+	return dst;
 }

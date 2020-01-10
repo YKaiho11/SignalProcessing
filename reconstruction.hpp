@@ -42,9 +42,9 @@ void reconstruct(int N,int K,int I,double** H,double** U,comp*** V,Sound* base_s
 	}
 
 	for (i = 0; i < I; i++) {
-		sound->draw_wave(sound->length*i/I, sound->length*(i+1) / I);
+		sound->draw_wave(sound->length*i/I, sound->length*(i+1) / I,1);
 	}
-	waitKey();
+	waitKey(100);
 }
 
 void add_wave(int selectNo, int N, int K, int I, double** H, double **U, comp*** V, Sound* sound) {

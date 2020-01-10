@@ -105,7 +105,7 @@ void cNMF(Sound* sound, double startTime, double endTime, int I, int K) {
 
 	//generate Y
 	for (i = 0; i < I; i++) {
-		FFT(sound, (endTime - startTime)*i / I + startTime, (endTime - startTime)*(i + 1) / I + startTime, N, G, false);
+		FFT(sound, (endTime - startTime)*i / I + startTime, (endTime - startTime)*(i + 1) / I + startTime, N, G, false, 0);
 		max_FFT[i] = 0;
 		for (n = 0; n < N; n++) {
 			if (max_FFT[i] < abs(G[n])) max_FFT[i] = pow(abs(G[n]), 1);
@@ -145,7 +145,7 @@ void cNMF(Sound* sound, double startTime, double endTime, int I, int K) {
 				V[n][k][i].im = 2 * (double)rand() / RAND_MAX - 1;
 				double normalizing = abs(V[n][k][i]);
 				V[n][k][i].re /= normalizing;
-				V[n][k][i].im /= normalizing;**/
+				V[n][k][i].im /= normalizing;/**/
 
 				comp c = Y[n][i] / abs(Y[n][i]);
 				V[n][k][i] = c;
@@ -180,19 +180,33 @@ void cNMF(Sound* sound, double startTime, double endTime, int I, int K) {
 	for (n = 0; n < N; n++) delete[] Y_[n];
 	delete[] Y_;
 
+	const int width = 600;
+	const int height = 600;
+	int *decreaseIndex;
+	decreaseIndex = new int[K];
+	decreaseIndex[0] = -1;
+	int decreaseNo = 0;
+	decreaseNo = decrease_base(H, N, K, decreaseIndex, 0.11);
+	printf("decrease = %d\n", decreaseNo);
+	merge_base(H, U, N, K, I, decreaseIndex, decreaseNo);
+	printf("decrease + merge = %d\n", decreaseNo);
+	printf("remain = %d\n", K - decreaseNo);
+
+	show_base(width, height, K, N, decreaseNo, decreaseIndex, H,"NMF base");
+	show_weight(width, height, K, I, decreaseNo, decreaseIndex, U,"NMF weight");
+	waitKey(1);
+
 
 	/********** main culculation **********/
 	cNMF_calc(N, K, I, F, H, U, V, Y, B, X, lambda, p);
 
 
-	int *decreaseIndex;
-	decreaseIndex = new int[K];
+	
 	for (k = 1; k < K; k++) decreaseIndex[k] = 0;
 	decreaseIndex[0] = -1;
-	//int decreaseNo = decrease_base(H, N, K, decreaseIndex, 0.11);
-	int decreaseNo = 0;
+	decreaseNo = decrease_base(H, N, K, decreaseIndex, 0.11);
 	printf("decrease = %d\n", decreaseNo);
-	//merge_base(H, U, N, K, I, decreaseIndex, decreaseNo);
+	merge_base(H, U, N, K, I, decreaseIndex, decreaseNo);
 	printf("decrease + merge = %d\n", decreaseNo);
 	printf("remain = %d\n", K - decreaseNo);
 	if (decreaseNo == K) {
@@ -211,15 +225,8 @@ void cNMF(Sound* sound, double startTime, double endTime, int I, int K) {
 		}
 	}
 
-	const int width = 600;
-	const int height = 600;
-
-	show_base(width, height, K, N, decreaseNo, decreaseIndex, H);
-	show_weight(width, height, K, I, decreaseNo, decreaseIndex, U);
-
-	for (k = 0; k < K; k++)
-		for (i = 0; i < I; i++)
-			U[k][i] *= max_FFT[i]*10;
+	show_base(width, height, K, N, decreaseNo, decreaseIndex, H,"CMF base");
+	show_weight(width, height, K, I, decreaseNo, decreaseIndex, U,"CMF weight");
 
 	//create new Sound
 	reconstruct(N,K,I,H,U,V,sound);
@@ -293,7 +300,7 @@ void cNMF_calc(int N,int K,int I,comp** F,double** H,double** U,comp*** V,comp**
 		else {
 			//printf("%f,%f\n", distance, distance_pre);
 			printf("calculating CMF... d=%f    distance=%f\n", abs(distance_pre - distance), distance);
-			if (abs(distance_pre - distance) < 0.001) break;/*********************************************  SET THRESHOLD **************************/
+			if (abs(distance_pre - distance) < 0.0001) break;/*********************************************  SET THRESHOLD **************************/
 		}
 
 		//update B

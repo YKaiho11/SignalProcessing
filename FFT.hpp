@@ -51,7 +51,7 @@ double hamming_window(const int N, int i) {
 }
 
 
-void FFT(Sound* sound, double startTime, double endTime, const int N, comp* G, bool drawResult){
+void FFT(Sound* sound, double startTime, double endTime, const int N, comp* G, bool drawResult,int drawTime){
     int i;
     complex_t* x;
     x=(complex_t*)malloc(N*sizeof(complex_t));
@@ -90,9 +90,9 @@ void FFT(Sound* sound, double startTime, double endTime, const int N, comp* G, b
             putText(win, c, Point(i*width/5,height+height_offset/2), FONT_HERSHEY_SIMPLEX, 1.2, Scalar(0,0,200), 1, 0);
         }
         
-        imshow("win",win);
+        imshow("FFT result",win);
         //imwrite("output_FFT.png",win);
-        waitKey();
+        waitKey(drawTime);
     }
     
     free(x);

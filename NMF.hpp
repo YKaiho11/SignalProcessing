@@ -10,9 +10,9 @@ void merge_base(double **V, double **T, int N, int K, int I, int *index, int &de
 void addList(int val, int *index, int decreaseNo);
 void NMF_calc(double **X, double **V, double **T, int N, int K, int I);
 
-void show_base(const int width, const int height, int K, int N, int decreaseNo, int decreaseIndex[], double **V);
+void show_base(const int width, const int height, int K, int N, int decreaseNo, int decreaseIndex[], double **V,String win_name);
 void show_base_log(const int width, const int height, int K, int N, int decreaseNo, int decreaseIndex[], double **V);
-void show_weight(const int width, const int height, int K, int I, int decreaseNo, int decreaseIndex[], double **T);
+void show_weight(const int width, const int height, int K, int I, int decreaseNo, int decreaseIndex[], double **T, String win_name);
 
 void NMF(Sound* sound, double startTime, double endTime, int I, int K) {
 	int i, n, k;
@@ -57,7 +57,7 @@ void NMF(Sound* sound, double startTime, double endTime, int I, int K) {
 
 	//generate X
 	for (i = 0; i < I; i++) {
-		FFT(sound, (endTime - startTime)*i / I + startTime, (endTime - startTime)*(i + 1) / I + startTime, N, G, false);
+		FFT(sound, (endTime - startTime)*i / I + startTime, (endTime - startTime)*(i + 1) / I + startTime, N, G, false, 0);
 		double max_s = 0;
 		for (n = 0; n < N; n++) {
 			if (max_s < pow(abs(G[n]), 1))max_s = pow(abs(G[n]), 1);
@@ -102,8 +102,8 @@ void NMF(Sound* sound, double startTime, double endTime, int I, int K) {
 	const int height = 600;
 
 	//show result
-	show_base(width, height, K, N, decreaseNo, decreaseIndex, V);
-	show_weight(width, height, K, I, decreaseNo, decreaseIndex, T);
+	show_base(width, height, K, N, decreaseNo, decreaseIndex, V,"NMF base");
+	show_weight(width, height, K, I, decreaseNo, decreaseIndex, T,"NMF weight");
 
 	/*****free memory ****/
 	for (i = 0; i < N; i++) {
@@ -355,7 +355,7 @@ double IS(double x, double x_) {
 	return x / x_ - log(x / x_) - 1;
 }
 
-void show_base(const int width,const int height,int K,int N,int decreaseNo,int decreaseIndex[],double **V) {
+void show_base(const int width,const int height,int K,int N,int decreaseNo,int decreaseIndex[],double **V,String win_name) {
 	//todo: draw histogram as log
 	int k, n, i;
 	int base_width = width;
@@ -402,26 +402,13 @@ void show_base(const int width,const int height,int K,int N,int decreaseNo,int d
 			}
 		}
 	}
-	imshow("base", base);
+	imshow(win_name, base);
 	waitKey(1);
 }
+
 
 void show_base_log(const int width, const int height, int K, int N, int decreaseNo, int decreaseIndex[], double **V) {
-	//todo: draw histogram as log
-	/**
-base index   0->N/2           n
-image index  0->base_width    i
-	   f(i)=a*exp(i)-a
-f(0)=0
-f(base_width)=a*exp(base_width)-a=N/2
-
-a=N/2  /(exp(base_width)-1)
-
--->f(i)=N/(2*(exp(base_width)-1))*(exp(i)-1)
-
-image index 0->base_width
-base index  f(0)->f(base_width)
-	**/
+	//todo: complete this function
 	int k, n, i;
 	int base_width = width;
 	int base_height = height / K;
@@ -471,7 +458,7 @@ base index  f(0)->f(base_width)
 	waitKey(1);
 }
 
-void show_weight(const int width,const int height,int K,int I,int decreaseNo,int decreaseIndex[],double **T) {
+void show_weight(const int width,const int height,int K,int I,int decreaseNo,int decreaseIndex[],double **T,String win_name) {
 	int k, i;
 	int index = 0;
 	int base_height = height / K;
@@ -498,6 +485,6 @@ void show_weight(const int width,const int height,int K,int I,int decreaseNo,int
 			}
 		}
 	}
-	imshow("feature", feature);
+	imshow(win_name, feature);
 	waitKey(1);
 }

@@ -2,7 +2,7 @@
 #include "complex.hpp"
 #include "FFT.hpp"
 
-void Fourier(Sound* sound,double startTime, double endTime){
+void Fourier(Sound* sound,double startTime, double endTime,bool draw,int drawTime){
     if(startTime>=endTime) return;
     if(startTime<0) return;
     if(endTime>sound->length) return;
@@ -13,13 +13,10 @@ void Fourier(Sound* sound,double startTime, double endTime){
     printf("max frequency = %f\n",N/(2*(endTime-startTime)));
     printf("interval frequency = %f\n",1/(2*(endTime-startTime)));
     
-    static bool draw=true;
     
-    
-    FFT(sound,startTime,endTime,N,G,draw);
+    FFT(sound,startTime,endTime,N,G,draw,drawTime);
     
     
     IFFT(sound,startTime,endTime,N,G);
-    FFT(sound,startTime,endTime,N,G,draw);
-    draw=false;
+    //FFT(sound,startTime,endTime,N,G,draw,drawTime);
 }
